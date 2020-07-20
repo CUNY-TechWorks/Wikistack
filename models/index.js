@@ -1,21 +1,7 @@
-const Sequelize = require('sequelize');
+const { Sequelize, Op } = require('sequelize');
 const db = new Sequelize('postgres://localhost:5432/wikistack', {
   logging: false,
 });
-
-function generateSlug(title) {
-  if(title === '' || title === undefined) {
-     const letters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMOPQRSTUVWXYZ';
-
-     let randomized = '';
-     for(let i=0;i<Math.floor(Math.random() * 10);i++) {
-         randomized+=letters[Math.floor(Math.random() * letters.length)];
-     }
-     
-     return randomized;
-  }
-  return title.replace(/\s+/, '_').replace(/\W/g, '');
-}
 
 const Page = db.define('Page', {
    title: {
@@ -32,27 +18,45 @@ const Page = db.define('Page', {
    },
    status: {
      type: Sequelize.ENUM('open', 'closed'),
+   },
+   tags: {
+     type: Sequelize.ARRAY(Sequelize.STRING),
+     allowNull: false,
    }
 });
 
-// before the title and slug is saved in the database
+// before slug is saved in the database
 Page.beforeValidate(pageInstance => {
-   pageInstance.slug = generateSlug(pageInstance.title);
+   pageInstance.slug = pageInstance.title.replace(/\s+/, '_').replace(/\W/g, '');
 });
+
+// Adding a class level method, which means an instance can't access this method, but a model class can (i.e Page model)
+Page.findByTag = async (tag = []) => {
+   const pages = await Page.findAll({
+     where: {
+       tags: {
+         [Op.overlap]: tag, 
+       }
+     }
+   });
+
+   return pages;
+}
 
 const User = db.define('User', {
     name: {
       type: Sequelize.STRING,
       allowNull: false,
-      unique: true,
     },
     email: {
       type: Sequelize.STRING,
       allowNull: false,
-      unique: true,
     }
 });
 
 Page.belongsTo(User, { as: 'author' });
+
+// Since Page already has a foreign key, there's no need to add a new one.
+User.hasMany(Page, { foreignKey: 'authorId' });
 
 module.exports = { Page, User, db }
