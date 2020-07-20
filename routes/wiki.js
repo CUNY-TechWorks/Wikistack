@@ -24,7 +24,7 @@ router.post('/', async (req,res,next) => {
 
       // .create fills Page model values from req.body and replaced the
       // need for .save() method
-      req.body.tags = req.body.tags.replace(/,/g, ' ').split(" ");
+      req.body.tags = req.body.tags.replace(/,+/g, ' ').replace(/\s+/g,' ').split(" ");
 
       const page = await Page.create(req.body);
 
@@ -48,7 +48,7 @@ router.post("/:slug", async (req,res,next) => {
       title: req.body.title,
       content: req.body.content,
       status: req.body.status,
-      tags: req.body.tags.replace(/,/g, ' ').split(" "),
+      tags: req.body.tags.replace(/,+/g, ' ').replace(/\s+/g,' ').split(" "),
     });
      
     // update the associated user
@@ -77,7 +77,7 @@ router.get(`/add`, (req,res,next) => {
 
 router.get("/search", async (req,res,next) => {
   try {
-    const pages = await Page.findByTag(req.query.search.replace(/,/g, '').split(" "));
+    const pages = await Page.findByTag(req.query.search.replace(/,+/g, ' ').replace(/\s+/g,' ').split(" "));
 
     res.send(main(pages));
   }
