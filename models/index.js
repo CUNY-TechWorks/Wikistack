@@ -30,6 +30,18 @@ Page.beforeValidate(pageInstance => {
    pageInstance.slug = pageInstance.title.replace(/\s+/, '_').replace(/\W/g, '');
 });
 
+Page.beforeCreate(pageInstance => {
+   pageInstance.tags = pageInstance.tags.replace(/,+/g, ' ').replace(/\s+/g,' ').split(" ");
+});
+
+Page.beforeDestroy(pageInstance => {
+   return User.destroy({
+      where: {
+         id: pageInstance.authorId,
+      }
+   });
+});
+
 // Adding a class level method, which means an instance can't access this method, but a model class can (i.e Page model)
 Page.findByTag = async (tag = []) => {
    const pages = await Page.findAll({

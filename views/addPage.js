@@ -16,7 +16,7 @@ module.exports = () => layout(html`
     <div class="form-group">
       <label for="email" class="col-sm-2 control-label">Author Email</label>
       <div class="col-sm-10">
-        <input id="email" name="email" type="text" class="form-control"/>
+        <input id="email" name="email" type="email" class="form-control"/>
       </div>
     </div>
     

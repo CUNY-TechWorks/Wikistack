@@ -24,8 +24,6 @@ router.post('/', async (req,res,next) => {
 
       // .create fills Page model values from req.body and replaced the
       // need for .save() method
-      req.body.tags = req.body.tags.replace(/,+/g, ' ').replace(/\s+/g,' ').split(" ");
-
       const page = await Page.create(req.body);
 
       page.setAuthor(user);
@@ -54,14 +52,11 @@ router.post("/:slug", async (req,res,next) => {
     // update the associated user
     const user = await page.getAuthor();
     
-    // user.toJSON().name = req.body.author;
-    // user.toJSON().email = req.body.email;
     await user.update({
        name: req.body.author,
        email: req.body.email,
     });
 
-    // ensures that the values get updated
     await page.save();
 
     res.redirect(`/wiki/${page.slug}`);
@@ -112,7 +107,6 @@ router.get("/:slug/delete", async (req,res,next) => {
       const user = await page.getAuthor();
 
       await page.destroy();
-      await user.destroy();
       
       res.redirect("/");
    }
